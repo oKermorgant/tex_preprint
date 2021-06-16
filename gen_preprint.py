@@ -137,15 +137,21 @@ def read_tex(tex):
     with open(tex) as f:
         content = f.read().splitlines()
     for i,line in enumerate(content):
-        if not line.startswith('%'):
-            line = line.split('%')[0].strip()
-            if '\\input' in line:
-                content[i] = read_tex(get_file(tex_arg(line) + '.tex'))
-            else:
-                content[i] = line
-    content = '\n'.join(line for line in content if not line.startswith('%'))
-    while '\n\n\n' in content:
-        content = content.replace('\n\n\n', '\n\n')
+        # keep comment symbol but remove the actual comment
+        comm = line.find('%')
+        if comm != -1:
+            line = line[:comm+1]
+            
+        if '\\input' in line:
+            content[i] = read_tex(get_file(tex_arg(line) + '.tex'))
+        else:
+            content[i] = line
+            
+    content = '\n'.join(content)
+    
+    for s,d in (('\n\n\n', '\n\n'), ('%\n%', '%'), ('  %', ' %')):
+        while s in content:
+            content = content.replace(s, d)
     return content
             
 content = read_tex(tex).replace('.eps}', '}')
@@ -167,7 +173,7 @@ if new_stuff_idx != -1:
 if '\\graphicspath' not in content:
     content = content.replace('\\title', '\\graphicspath{{fig/}}\n\\title', 1)
     
-content = [line.split('%')[0].strip() for line in content.splitlines()]
+content = content.splitlines()
     
 # get where pictures may be coming from
 
@@ -231,9 +237,9 @@ def get_image(tag):
     
 images = []
 for line in content:
-    new_line = line
+
     if '\\graphicspath' in line:
-        new_line = '\\graphicspath{{fig/}}'
+        line = '\\graphicspath{{fig/}}'
         Color.ok('  extracting images...')
     elif '\\includegraphics' in line:
         tags = {}
@@ -246,7 +252,7 @@ for line in content:
                 if tags[f] in images:
                     print(f'Image {tags[f]} appears several times')
                 images.append(tags[f])
-        new_line = dict_replace(line, tags)
+        line = dict_replace(line, tags)
     elif '\\begin{overpic}' in line:
         f = tex_arg(line.replace('{overpic}', ''))
         src = get_image(f)
@@ -255,7 +261,7 @@ for line in content:
             print(f'Image {tag} appears several times')
         images.append(tag)
         copy_image(src, fig_dir + tag)
-        new_line = line.replace(f, tag)
+        line = line.replace(f, tag)
     else:
         src, dst, rep = extract_bib_info(line)
         if src:
@@ -266,9 +272,8 @@ for line in content:
                     os.system(f'python3 {os.path.dirname(__file__)}/clean_bib.py "{s}" "{d}" -q -s "{tex}"')
                 else:
                     shutil.copy(s, d)                
-            new_line = dict_replace(line, rep)
-    if new_line:
-        new_content.append(new_line)
+            line = dict_replace(line, rep)
+    new_content.append(line)
         
 with open(preprint_dir + 'FINAL_VERSION.tex', 'w') as f:
     f.write('\n'.join(new_content))
