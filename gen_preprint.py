@@ -5,6 +5,9 @@ import bibtexparser
 
 CHECK_IMAGES = True
 
+# remove highlights
+NEW_STUFF_CMD = 'newStuff'
+
 class Color:
     PURPLE = '\033[1;35;48m'
     CYAN = '\033[1;36;48m'
@@ -153,6 +156,12 @@ for key, n in (('pdfsuppresswarningpagegroup', '1'), ('pdfminorversion', '7')):
     if key in content:
         idx = content.index('\\'+key)
         content = content.replace(content[idx:idx+len(key)+3], '')
+        
+# remove newStuff
+new_stuff_idx = content.find(NEW_STUFF_CMD)
+if new_stuff_idx != -1:
+    after = new_stuff_idx + len(NEW_STUFF_CMD)
+    content = content[:new_stuff_idx] + NEW_STUFF_CMD + content[after:].replace(f'\\{NEW_STUFF_CMD}', '')
         
 # add this graphics path anyway
 if '\\graphicspath' not in content:
