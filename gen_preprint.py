@@ -126,6 +126,7 @@ Color.ok('Creating preprint from ' + tex)
 try:
     texinputs =  os.environ['TEXINPUTS'].split(':')
     texinputs[0] = base_dir
+    texinputs.append(texinputs[1] + 'authors/')
 except:
     texinputs = [base_dir]
 
@@ -187,7 +188,6 @@ for line in content:
             if os.path.exists(dest) and dest not in texinputs:
                 texinputs.append(dest)
 
-texinputs.append(texinputs[1] + 'authors/')
 # look for a relative picture
 img_ext = '.png,.pdf,.jpg,.mps,.jpeg,.jbig2,.jb2,.PNG,.PDF,.JPG,.JPEG,.JBIG2,.JB2'.split(',')
 
