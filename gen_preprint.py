@@ -126,7 +126,7 @@ Color.ok('Creating preprint from ' + tex)
 try:
     texinputs =  os.environ['TEXINPUTS'].split(':')
     texinputs[0] = base_dir
-else:
+except:
     texinputs = [base_dir]
 
 def get_file(tag):
