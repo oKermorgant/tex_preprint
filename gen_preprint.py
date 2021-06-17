@@ -123,11 +123,11 @@ os.mkdir(fig_dir)
 
 Color.ok('Creating preprint from ' + tex)
 
-if 'TEXINPUTS' in os.environ:
+try:
     texinputs =  os.environ['TEXINPUTS'].split(':')
+    texinputs[0] = base_dir
 else:
-    texinputs = []
-texinputs[0] = base_dir
+    texinputs = [base_dir]
 
 def get_file(tag):
     for src in texinputs:
